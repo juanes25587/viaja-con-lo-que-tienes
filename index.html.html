@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ViajaConLoQueTienes — v2</title>
+<style>
+:root{--ink:#10233f;--muted:#667085;--bg:#f6f8fc;--card:#fff;--blue:#1769ff;--line:#e5eaf2;--green:#079669}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--ink);background:var(--bg)}
+header{background:linear-gradient(135deg,#0a2042,#1769ff);color:#fff;padding:22px 6% 92px}nav,.hero,main{max-width:1180px;margin:auto}nav{display:flex;justify-content:space-between}.logo{font-weight:850;font-size:21px}.logo span{color:#9ed4ff}.hero{margin-top:55px}.hero h1{font-size:clamp(42px,6vw,72px);line-height:.98;letter-spacing:-3px;margin:0;max-width:850px}.hero p{font-size:19px;max-width:680px;opacity:.9}
+.search{margin-top:32px;background:#fff;color:var(--ink);padding:16px;border-radius:22px;box-shadow:0 20px 50px #061a3b55;display:grid;grid-template-columns:1.2fr 1fr 1.2fr .65fr .65fr auto;gap:9px}.field{border:1px solid var(--line);border-radius:13px;padding:10px 12px}.field small{display:block;color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:4px}.field input,.field select{width:100%;border:0;outline:0;background:transparent;color:var(--ink);font-size:14px}
+button{border:0;background:var(--blue);color:#fff;border-radius:13px;font-weight:800;padding:0 19px;cursor:pointer}.search button{min-height:48px}button:hover{filter:brightness(.94)}
+main{margin-top:-45px;padding:0 20px 70px}.status{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px 20px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 8px 25px #10233f0b}.status small{color:var(--muted)}.results{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.card{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 8px 25px #10233f0b}.photo{height:170px;background-size:cover;background-position:center}.body{padding:17px}.country{font-size:12px;color:var(--muted)}h2{margin:4px 0 10px;font-size:23px}.total{font-size:27px;font-weight:850}.total span{font-size:11px;color:var(--muted);font-weight:500}.tag{display:inline-block;margin:8px 0;padding:6px 9px;border-radius:99px;background:#e9faf4;color:var(--green);font-size:11px;font-weight:800}.break{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:11px;margin-top:10px;font-size:12px;color:var(--muted)}.cta{width:100%;padding:12px;margin-top:15px}.note{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.5}.empty{display:none;background:#fff;padding:30px;border-radius:18px;border:1px solid var(--line)}
+@media(max-width:1000px){.search{grid-template-columns:1fr 1fr}.search button{height:48px}.results{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){header{padding-bottom:75px}.hero{margin-top:42px}.hero h1{letter-spacing:-2px}.search{grid-template-columns:1fr}.results{grid-template-columns:1fr}.status{display:block}.status small{display:block;margin-top:5px}}
+</style>
+</head>
+<body>
+<header>
+<nav><div class="logo">✈️ Viaja<span>ConLoQueTienes</span></div><div>Planea con tu presupuesto</div></nav>
+<section class="hero">
+<h1>Tu presupuesto.<br>Tu próximo viaje.</h1>
+<p>Elige tu moneda, dinos desde dónde sales y descubre destinos que pueden encajar con tu presupuesto.</p>
+<div class="search">
+<label class="field"><small>Presupuesto</small><input id="budget" type="number" value="2000" min="1"></label>
+<label class="field"><small>Moneda</small><select id="currency"><option value="USD">🇺🇸 USD — Dólar</option><option value="EUR">🇪🇺 EUR — Euro</option><option value="COP">🇨🇴 COP — Peso colombiano</option><option value="MXN">🇲🇽 MXN — Peso mexicano</option><option value="GBP">🇬🇧 GBP — Libra</option><option value="BRL">🇧🇷 BRL — Real</option><option value="PEN">🇵🇪 PEN — Sol</option><option value="CLP">🇨🇱 CLP — Peso chileno</option></select></label>
+<label class="field"><small>Origen</small><input id="origin" value="Miami"></label>
+<label class="field"><small>Duración</small><select id="days"><option>4</option><option selected>7</option><option>10</option><option>14</option></select></label>
+<label class="field"><small>Viajeros</small><select id="people"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+<button onclick="searchTrips()">Buscar viajes</button>
+</div>
+</section>
+</header>
+<main>
+<div class="status"><div><strong id="title">Destinos recomendados</strong><br><small id="subtitle">Calculando...</small></div><div>🌐 <small id="rate">Tipo de cambio</small></div></div>
+<div id="results" class="results"></div><div id="empty" class="empty">No encontramos opciones para ese presupuesto. Prueba con más días de flexibilidad o aumenta el presupuesto.</div>
+<p class="note">⚠️ Esta versión usa datos de demostración para vuelos, hoteles y gastos. La arquitectura está preparada para sustituirlos por datos de proveedores reales. Los tipos de cambio se consultan desde una API externa cuando el navegador tiene acceso a internet.</p>
+</main>
+<script>
+const trips=[
+{name:"Cancún",country:"México",usd:1120,img:"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80",flight:420,hotel:400,food:180,activities:120},
+{name:"Medellín",country:"Colombia",usd:1280,img:"https://images.unsplash.com/photo-1592859600972-1b0834d83747?auto=format&fit=crop&w=900&q=80",flight:360,hotel:420,food:260,activities:240},
+{name:"Lima",country:"Perú",usd:1390,img:"https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&fit=crop&w=900&q=80",flight:480,hotel:420,food:250,activities:240},
+{name:"San José",country:"Costa Rica",usd:1450,img:"https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=900&q=80",flight:520,hotel:450,food:260,activities:220},
+{name:"Madrid",country:"España",usd:1940,img:"https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=900&q=80",flight:980,hotel:500,food:280,activities:180},
+{name:"París",country:"Francia",usd:2080,img:"https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=900&q=80",flight:980,hotel:570,food:300,activities:230}
+];
+let rates={USD:1};
+const symbols={USD:"$",EUR:"€",COP:"$","MXN":"$","GBP":"£",BRL:"R$",PEN:"S/",CLP:"$"};
+function fmt(n,c){return symbols[c]+Math.round(n).toLocaleString("en-US")}
+async function getRate(c){
+ if(c==="USD")return 1;
+ try{const r=await fetch("https://api.frankfurter.dev/v2/rate/USD/"+c);const j=await r.json();return j.rate}catch(e){return ({EUR:.86,COP:3800,MXN:18.4,GBP:.74,BRL:5.4,PEN:3.45,CLP:930}[c]||1)}
+}
+async function searchTrips(){
+ const c=document.getElementById("currency").value,b=+document.getElementById("budget").value||0,d=+document.getElementById("days").value,p=+document.getElementById("people").value,o=document.getElementById("origin").value;
+ document.getElementById("title").textContent="Buscando tus mejores opciones…";document.getElementById("results").innerHTML="";
+ const rate=await getRate(c);rates[c]=rate;document.getElementById("rate").textContent=`1 USD ≈ ${rate.toLocaleString("en-US",{maximumFractionDigits:2})} ${c}`;
+ const factor=(d/7)*(p/2);
+ const list=trips.map(t=>({...t,total:t.usd*factor*rate})).filter(t=>t.total<=b).sort((a,b)=>a.total-b.total);
+ document.getElementById("subtitle").textContent=`${p} ${p===1?"persona":"personas"} · ${d} días · salida desde ${o} · moneda ${c}`;
+ document.getElementById("title").textContent=list.length?`Encontramos ${list.length} viajes dentro de tu presupuesto`:"No encontramos viajes dentro del presupuesto";
+ document.getElementById("empty").style.display=list.length?"none":"block";
+ const r=document.getElementById("results");
+ list.forEach(t=>{const rem=b-t.total;r.innerHTML+=`<article class="card"><div class="photo" style="background-image:url('${t.img}')"></div><div class="body"><div class="country">${t.country}</div><h2>${t.name}</h2><div class="total">${fmt(t.total,c)} <span>aprox. total</span></div><div class="tag">✓ Encaja en tu presupuesto</div><div class="break"><span>✈️ Vuelo</span><b>${fmt(t.flight*factor*rate,c)}</b></div><div class="break"><span>🏨 Hotel</span><b>${fmt(t.hotel*factor*rate,c)}</b></div><div class="break"><span>🍴 Comida + actividades</span><b>${fmt((t.food+t.activities)*factor*rate,c)}</b></div><div class="break"><span>Te quedan</span><b style="color:var(--green)">${fmt(rem,c)}</b></div><button class="cta" onclick="alert('Aquí conectaríamos la búsqueda real de vuelos, hoteles y actividades para ${t.name}.')">Ver mi viaje →</button></div></article>`});
+}
+searchTrips();
+</script>
+</body></html>
